@@ -125,6 +125,11 @@ func init() {
 }
 
 // Start initializes tracelog and only displays the specified logging level.
+func StartF(logLevel int32,fileHandle io.Writer) {
+	turnOnLogging(logLevel, fileHandle)
+}
+
+// Start initializes tracelog and only displays the specified logging level.
 func Start(logLevel int32) {
 	turnOnLogging(logLevel, nil)
 }
