@@ -130,7 +130,7 @@ func init() {
 func StartF(logLevel int32, fileHandle io.Writer, ravenKey string) {
 	sentryEnabled := false
 	if ravenKey != "" {
-		raven.SetDSN("https://c433bfa905cb4aea94373dff1d0412b4:d7166d32542546d7a2e49fd1e2445598@sentry.io/1259074")
+		raven.SetDSN(ravenKey)
 		sentryEnabled = true
 	}
 
@@ -138,8 +138,14 @@ func StartF(logLevel int32, fileHandle io.Writer, ravenKey string) {
 }
 
 // Start initializes tracelog and only displays the specified logging level.
-func Start(logLevel int32) {
-	turnOnLogging(logLevel, nil, false)
+func Start(logLevel int32, ravenKey string) {
+	sentryEnabled := false
+	if ravenKey != "" {
+		raven.SetDSN(ravenKey)
+		sentryEnabled = true
+	}
+
+	turnOnLogging(logLevel, nil, sentryEnabled)
 }
 
 // StartFile initializes tracelog and only displays the specified logging level
