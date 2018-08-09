@@ -7,6 +7,7 @@ package tracelog
 
 import (
 	"fmt"
+	"github.com/getsentry/raven-go"
 )
 
 //** STARTED AND COMPLETED
@@ -71,6 +72,10 @@ func Error(err error, title string, functionName string) {
 
 // Errorf writes to the Error destination and accepts an err
 func Errorf(err error, title string, functionName string, format string, a ...interface{}) {
+	if logger.SentryEnabled {
+		raven.CaptureErrorAndWait(err, nil)
+	}
+
 	logger.Error.Output(2, fmt.Sprintf("%s : %s : ERROR : %s : %s\n", title, functionName, fmt.Sprintf(format, a...), err))
 }
 

@@ -63,6 +63,7 @@ package tracelog
 import (
 	"bytes"
 	"fmt"
+	"github.com/getsentry/raven-go"
 	"io"
 	"io/ioutil"
 	"log"
@@ -113,6 +114,7 @@ type traceLog struct {
 	Error              *log.Logger
 	File               *log.Logger
 	LogFile            *os.File
+	SentryEnabled      bool
 }
 
 // log maintains a pointer to a singleton for the logging system.
@@ -125,13 +127,19 @@ func init() {
 }
 
 // Start initializes tracelog and only displays the specified logging level.
-func StartF(logLevel int32,fileHandle io.Writer) {
-	turnOnLogging(logLevel, fileHandle)
+func StartF(logLevel int32, fileHandle io.Writer, ravenKey string) {
+	sentryEnabled := false
+	if ravenKey != nil {
+		raven.SetDSN("https://c433bfa905cb4aea94373dff1d0412b4:d7166d32542546d7a2e49fd1e2445598@sentry.io/1259074")
+		sentryEnabled = true
+	}
+
+	turnOnLogging(logLevel, fileHandle, sentryEnabled)
 }
 
 // Start initializes tracelog and only displays the specified logging level.
 func Start(logLevel int32) {
-	turnOnLogging(logLevel, nil)
+	turnOnLogging(logLevel, nil, false)
 }
 
 // StartFile initializes tracelog and only displays the specified logging level
@@ -156,7 +164,7 @@ func StartFile(logLevel int32, baseFilePath string, daysToKeep int) {
 	}
 
 	// Turn the logging on
-	turnOnLogging(logLevel, logf)
+	turnOnLogging(logLevel, logf, false)
 
 	// Cleanup any existing directories
 	logger.LogDirectoryCleanup(baseFilePath, daysToKeep)
@@ -229,7 +237,7 @@ func LogLevel() int32 {
 }
 
 // turnOnLogging configures the logging writers.
-func turnOnLogging(logLevel int32, fileHandle io.Writer) {
+func turnOnLogging(logLevel int32, fileHandle io.Writer, sentryEnabled bool) {
 	traceHandle := ioutil.Discard
 	infoHandle := ioutil.Discard
 	warnHandle := ioutil.Discard
@@ -279,6 +287,7 @@ func turnOnLogging(logLevel int32, fileHandle io.Writer) {
 	logger.Info = log.New(infoHandle, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 	logger.Warning = log.New(warnHandle, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
 	logger.Error = log.New(errorHandle, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+	logger.SentryEnabled = sentryEnabled
 
 	atomic.StoreInt32(&logger.LogLevel, logLevel)
 }
