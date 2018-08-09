@@ -67,15 +67,14 @@ func Warning(title string, functionName string, format string, a ...interface{})
 
 // Error writes to the Error destination and accepts an err
 func Error(err error, title string, functionName string) {
+	if logger.SentryEnabled {
+		raven.CaptureErrorAndWait(err, nil)
+	}
 	logger.Error.Output(2, fmt.Sprintf("%s : %s : ERROR : %s\n", title, functionName, err))
 }
 
 // Errorf writes to the Error destination and accepts an err
 func Errorf(err error, title string, functionName string, format string, a ...interface{}) {
-	if logger.SentryEnabled {
-		raven.CaptureErrorAndWait(err, nil)
-	}
-
 	logger.Error.Output(2, fmt.Sprintf("%s : %s : ERROR : %s : %s\n", title, functionName, fmt.Sprintf(format, a...), err))
 }
 
